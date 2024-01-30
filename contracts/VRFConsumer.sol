@@ -96,7 +96,7 @@ contract VRFConsumer is VRFConsumerBaseV2 {
         override
     {
         //在此添加 solidity 代码
-        require(s_requests[_requestId].exists, "request is not found");
+        require(s_requests[_requestId].exists, "request not found");
         s_requests[_requestId].randomWords = _randomWords;
         s_requests[_requestId].fulfilled  = true;
         emit RequestFulfilled(_requestId, _randomWords);

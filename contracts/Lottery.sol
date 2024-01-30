@@ -2,6 +2,8 @@
 pragma solidity 0.8.19;
 //the pragma line is the preprocessor directive, tells the version of solidity compiler
 
+import "docs.chain.link/samples/VRF/VRFv2Consumer.sol";
+
 contract Lottery {
 	//struct used to store the user information
 	struct User {
@@ -13,16 +15,27 @@ contract Lottery {
 	// a list of the users
 	mapping (address => User) public users;
 
+  // mapping guess list
+  bytes32[] public guessCandidates;
+
   address[] public userAddresses;
 
 	address payable public owner;
 	bytes32 winningGuessSha3;
 
+  VRFConsumer generator;
+
 	//contructor function
-	constructor(uint _winningGuess) {
+	constructor(address _randomNumberGenerator) {
 		// by default the owner of the contract is accounts[0] to set the owner change truffle.js
 		owner = payable(msg.sender);
-		winningGuessSha3 = keccak256(abi.encode(_winningGuess));
+    generator = VRFConsumer(_randomNumberGenerator);
+    uint256 lastRequestId = generator.lastRequestId();
+    (, uint256[] memory randomWords) = generator.getRequestStatus(lastRequestId);
+		winningGuessSha3 = keccak256(abi.encode(randomWords[0] % 10 + 1));
+    for (uint i = 0; i < randomWords.length - 1; i++){
+      guessCandidates.push(keccak256(abi.encode(randomWords[i+1] % 10 + 1)));
+    }
 	}
 
   // returns the number of tokens purchased by an account
@@ -75,10 +88,9 @@ contract Lottery {
 	}
 
 	// doesn't allow anyone to buy anymore tokens
-	function closeGame() public returns(address) {
+	function closeGame() public view returns(address) {
     // can only be called my the owner of the contract
 		require(owner == msg.sender, "Only owner can close the game.");
-    reimburseTokens();
     return winnerAddress();
 	}
 
@@ -138,6 +150,13 @@ contract Lottery {
     for(uint i = 0; i < userAddresses.length; i++) {
         address userAddress = userAddresses[i];
         users[userAddress].guess = new uint[](0); // Clear the guess array
+    }
+  }
+
+  function resetWinningGuess() private {
+    if (guessCandidates.length > 0) {
+      winningGuessSha3 = guessCandidates[0];
+      delete guessCandidates[0];
     }
   }
 }
