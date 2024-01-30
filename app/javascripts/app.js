@@ -18,7 +18,7 @@ window.buyTokens = function() {
   var token_amount = $('#token-amount').val();
 
   Lottery.deployed().then(function(contractInstance) {
-    contractInstance.addTokens({from: account, value: web3.toWei(token_amount, 'ether')});
+    contractInstance.addTokens({from: account, value: web3.toWei(token_amount * 0.02, 'ether')});
     populateAccount();
   });
 

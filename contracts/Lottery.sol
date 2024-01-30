@@ -65,7 +65,7 @@ contract Lottery {
   // money can be released using selfdestruct(address)
 	function addTokens() public payable {
     uint present = 0;
-    uint tokensToAdd = msg.value/(10**18);
+    uint tokensToAdd = (msg.value/(10**18)) * 2 / 100;
 
     for(uint i = 0; i < userAddresses.length; i++) {
       if(userAddresses[i] == msg.sender) {
@@ -141,7 +141,7 @@ contract Lottery {
         // If unused tokens > 0, update unused tokens to 0
         _user.tokensBought = 0; 
         // Transfer ethers of unused tokens to the users
-        payable(userAddress).transfer(unusedTokens * (10**18));
+        payable(userAddress).transfer((unusedTokens * (10**18) * 2)/100);
       }
     }
   }
