@@ -2,105 +2,126 @@
 import "../stylesheets/app.css";
 
 // import libraries we need.
-import { default as Web3} from 'web3';
-import { default as contract } from 'truffle-contract'
-
-// import our contract artifacts and turn them into usable abstractions.
-import lottery_artifacts from '../../build/contracts/Lottery.json'
+import web3 from "./web3";
+import lottery from "./lottery";
 
 // lottery is our usable abstraction, which we'll use through the code below.
-var Lottery = contract(lottery_artifacts);
 var owner;
-var token;
 
-// to buy more tokens, each token costs 1 ether
-window.buyTokens = function() {
-  var token_amount = $('#token-amount').val();
+// to buy more tokens, each token costs 0.02 ether
+window.buyTokens = async function() {
+  try{
+    const accounts = await web3.eth.getAccounts();
 
-  Lottery.deployed().then(function(contractInstance) {
-    contractInstance.addTokens({from: account, value: web3.toWei(token_amount * 0.02, 'ether')});
-    populateAccount();
-  });
+    var token_amount = $('#token-amount').val();
+    await lottery.methods.addTokens().send({
+      from: accounts[0],
+      value: web3.toWei(token_amount * 0.02, 'ether')
+    }).then(() => {
+      populateAccount();
+    });
 
-  $('#token-amount').val('');
+    console.log("You have been entered!")
+
+    $('#token-amount').val('');
+  } catch (error){
+    console.error("Error buying tokens:", error);
+    alert("Error buying tokens:", error);
+  }
   return false;
 }
 
 // To make a guess, 1 guess = 1 token
-window.makeGuess = function() {
-  var guess = $('#user-guess').val();
+window.makeGuess = async function() {
+  const accounts = await web3.eth.getAccounts();
 
-  Lottery.deployed().then(function(contractInstance) {
-    contractInstance.makeGuess(guess, {from: account, gas:140000});
+  var guess = $('#user-guess').val();
+  if (Number(guess) < 1 || Number(guess) > 10 || !Number.isInteger(Number(guess))) {
+    alert("Please enter a number between 1 to 10.");
+    return false;
+  }
+
+  await lottery.methods.makeGuess(guess).send({
+    from: accounts[0]
+  }).then(()=>{
     populateAccount();
   });
+
+  console.log("Your guess number ", guess, "is received!");
 
   $('#user-guess').val('');
   return false;
 }
 
-window.closeGame = function() {
-  Lottery.deployed().then(function(contractInstance) {
-    contractInstance.reimburseTokens({from: owner, gas: 140000});
+window.closeGame = async function() {
+  const accounts = await web3.eth.getAccounts();
+  await lottery.methods.reimburseTokens().send({
+    from: accounts[0],
+    gas: 140000
   });
-  Lottery.deployed().then(function(contractInstance) {
-    contractInstance.closeGame.call({from: owner, gas: 140000}).then(function(result) {
-      $('#token-amount-btn').attr('disabled', 'disabled');
-      $('#user-guess-btn').attr('disabled', 'disabled');
-      showEndGame();
-    });
+
+  await lottery.methods.closeGame().call({
+    from: accounts[0],
+    gas: 140000
+  }).then(() => {
+    $('#token-amount-btn').attr('disabled', 'disabled');
+    $('#user-guess-btn').attr('disabled', 'disabled');
+    showEndGame();
   });
   return false;
 }
 
-window.transferFunds = function() {
-  Lottery.deployed().then(function(contractInstance) {
-    contractInstance.getPrice({from: owner, gas: 140000}).then(function(result) {
-      populateAccount();
-      $('#close-game-btn').attr('disabled', 'disabled');
-      $('#transfer-funds-btn').attr('disabled', 'disabled');
-    });
-  });
+window.transferFunds = async function() {
+  const accounts = await web3.eth.getAccounts();
+
+  await lottery.methods.getPrice().send({
+    from: accounts[0],
+    gas: 140000
+  }).then(() => {
+    $('#close-game-btn').attr('disabled', 'disabled');
+    $('#transfer-funds-btn').attr('disabled', 'disabled');
+    populateAccount();
+  })
 }
 
-var showEndGame = function() {
+var showEndGame = async function() {
   $('.close-game-btn').toggleClass('display-none');
   $('.winner-info').toggleClass('display-none');
 
-  Lottery.deployed().then(function(contractInstance) {
-    contractInstance.winningGuess.call().then(function(result) {
-      $('#winning-guess').html(result);
-    });
-    contractInstance.winnerAddress.call({gas: 140000}).then(function(result) {
-      $('#winner-address').html(result);
-    });
-  });
+  await lottery.methods.winningGuess().call().then(function(result) {
+    $('#winning-guess').html(result);
+  })
+  
+  await lottery.methods.winnerAddress().call().then(function(result) {
+    $('#winner-address').html(result);
+  })
 }
 
-var populateAccount = function () {
-  Lottery.deployed().then(function(contractInstance) {
-    contractInstance.userTokens.call(account).then(function(r) {
-      $('#user-tokens').html(r.toNumber());
-    });
+var populateAccount = async function () {
+  const accounts = await web3.eth.getAccounts();
 
-    // updating the balance of the contract and the user acount
-    web3.eth.getBalance(account, function(err, res) {
-      $('#user-balance').html(web3.fromWei(res.toNumber(), 'ether') + ' ether');
-    });
+  // Update number of tokens user bought
+  await lottery.methods.userTokens().call(accounts[0]).then(function(r){
+    $('#user-tokens').html(r.toNumber());
+  });
 
-    web3.eth.getBalance(contractInstance.address, function(err, res) {
-      $('#contract-balance').html(web3.fromWei(res.toNumber(), 'ether') + ' ether');
-    });
+  // Update current user balance
+  await web3.eth.getBalance(accounts[0], function(err, res){
+    $('#user-balance').html(web3.fromWei(res.toNumber(), 'ether') + ' ether');
+  });
 
-    // updating the user guesses
-    var guesses_string = "";
-    contractInstance.userGuesses.call(account).then(function(guesses) {
-      for(var i = 0; i < guesses.length; i++) {
-        guesses_string += (guesses[i] + ",");
-      }
+  // Update contract balance
+  await web3.eth.getBalance(lottery.options.address, function(err, res){
+    $('#contract-balance').html(web3.fromWei(res.toNumber(), 'ether') + ' ether');
+  });
 
-      $('#user-guesses').html(guesses_string.substr(0, guesses_string.length - 1));
-    });
+  // Update current user's guess list
+  await lottery.methods.userGuesses().call(accounts[0]).then(function(guesses){
+    for(var i = 0; i < guesses.length; i++) {
+      guesses_string += (guesses[i] + ",");
+    }
+
+    $('#user-guesses').html(guesses_string.substr(0, guesses_string.length - 1));
   });
 }
 
@@ -114,28 +135,26 @@ $( document ).ready(function() {
     window.web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:7545"));
   }
 
-  Lottery.setProvider(web3.currentProvider);
+  // Lottery.setProvider(web3.currentProvider);
 
   // total accounts
-  window.accounts = web3.eth.accounts;
+  // window.accounts = web3.eth.getAccounts();
   // account used for making guesses and buying tokens
-  window.account = web3.eth.accounts[1];
+  // window.account = web3.eth.getAccounts()[0];
 
-  Lottery.deployed().then(function(contractInstance) {
+  var account =  web3.eth.getAccounts()[0];
+  $('#user-account').html(account);
 
-    contractInstance.owner.call().then(function(result) {
-      owner = result;
-      $('#contract-owner').html(owner)
-    });
+  lottery.methods.owner().call().then(function(result){
+    owner = result;
+    $('#contract-owner').html(owner);
+  })
 
-    contractInstance.users.call(account).then(function(result) {
-      if(result[0] == "0x0000000000000000000000000000000000000000")
-        contractInstance.makeUser({gas: 140000, from: account});
-    });
-
-    $('#user-account').html(account);
-
-    populateAccount();
+  lottery.methods.owner.call().then(function(result) {
+    owner = result;
+    $('#contract-owner').html(owner)
   });
+
+  populateAccount();
 
 });
