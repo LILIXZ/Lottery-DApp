@@ -1,0 +1,237 @@
+.lottery-wrapper {
+  display: flex;
+  font-family: 'Roboto', sans-serif;;
+}
+
+.lottery-head {
+  text-align: center;
+  margin-bottom: 2rem;
+  padding-bottom: 2rem;
+  font-family: 'Roboto', sans-serif;;
+}
+
+.users-corner {
+  flex: 1;
+  padding-left: 5rem;
+  font-family: 'Roboto', sans-serif;;
+}
+
+.users-corner div, .winner-info div{
+  margin: 0.5rem 0;
+}
+
+.display-none {
+  display: none;
+}
+
+h2 {
+  margin-bottom: 1.5rem;
+  color: grey;
+}
+
+input {
+  width: 40%;
+}
+
+button {
+  margin-left: 1rem;
+}
+
+.owners-corner {
+  font-family: 'Roboto', sans-serif;;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.transfer-funds-container {
+  text-align: center;
+}
+
+.bold {
+  font-weight: 900;
+}
+
+* {
+  margin: 0px;
+  padding: 0px;
+  box-sizing: border-box;
+}
+
+body {
+  background-image: url('images/bg1.jpeg');
+  background-color: rgba(255, 255, 255, 0.1);
+  /*background-color: red;*/
+
+}
+
+*/
+
+/* body {
+  background-color: black;
+} */
+.ull i {
+
+  font-style: normal;
+
+}
+
+li {
+  margin: 20px 20px;
+  list-style: none;
+  height: 40px;
+  background-color: rgba(170, 200, 241, 0.279);
+  box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.5);
+  /* border-radius: 10px; */
+}
+
+.big {
+  width: 1000px;
+  height: 850px;
+  /* background-color: pink; */
+  margin: auto;
+  overflow: hidden;
+}
+
+.small1,
+.small2 {
+  float: left;
+  height: 590px;
+  margin: 80px 25px 25px 25px;
+
+  width: 450px;
+  background-color: rgba(252, 252, 244, 0.259);
+  border-radius: 5px;
+}
+
+.tupian {
+  /* display: inline-block; */
+  border-radius: 10px;
+  /* 可以调整圆角的大小 */
+  margin: 30px 20px 20px 20px;
+  height: 275px;
+  /* background-color: green; */
+  background-color: rgba(236, 214, 214, 0.469);
+
+  /* 使用rgba来设置半透明的背景颜色 */
+  box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.5);
+  /* 添加阴影，可以根据需要调整参数 */
+}
+
+.tupian img {
+  width: 100%;
+  height: 100%;
+}
+
+i {
+  margin-left: 7px;
+  line-height: 40px;
+  text-align: center;
+  /* margin: auto; */
+
+
+}
+
+header {
+  position: fixed;
+  padding: 10px;
+  /* bottom: 0; */
+  width: 100%;
+  height: 50px;
+  /* 根据实际需要调整高度 */
+  background-color: transparent;
+  /* color: #fff; */
+  text-align: center;
+  line-height: 50px;
+  /* 控制文字垂直居中 */
+}
+
+footer {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  height: 50px;
+  /* 根据实际需要调整高度 */
+  background-color: rgba(79, 76, 76, 0.662);
+  color: #fff;
+  text-align: center;
+  line-height: 50px;
+  /* 控制文字垂直居中 */
+}
+
+.artistic-text {
+  font-family: 'Dancing Script', cursive;
+  font-size: 48px;
+  color: #0096873c;
+  animation: rainbow 4s infinite;
+  /* 添加动画效果 */
+}
+
+@keyframes rainbow {
+  0% {
+      color: #ff0000fe;
+  }
+
+  25% {
+      color: #ff8000f0;
+  }
+
+  50% {
+      color: #ffff00e4;
+  }
+
+  75% {
+      color: #0015ff42;
+  }
+
+  100% {
+      color: #ff00ea3d;
+  }
+}
+
+.artistic-text3,
+.artistic-text2 {
+  font-family: 'Caveat', cursive;
+  font-size: 24px;
+  color: #f1ebf1;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.artistic-text3 {
+
+  color: blue;
+  margin-left: 225px;
+}
+
+input {
+  height: 30px;
+  line-height: 30px;
+}
+
+.extra1 button {
+  margin-top: 30px;
+  border-radius: 10px;
+  height: 40px;
+  width: 300px;
+  padding: 5px;
+  background-color: transparent;
+  margin-left: 350px;
+  margin-bottom: px;
+  font: rgba(232, 6, 6, 0.417);
+  border: 3px dashed white;
+
+
+}
+
+.extra1 button a {
+  text-decoration: none;
+  color: rgba(239, 247, 183, 0.709);
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.ull li i {
+  font-style: normal;
+  color: black;
+}
