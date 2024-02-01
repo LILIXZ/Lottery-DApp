@@ -1,4 +1,7 @@
 {
     "solidity.defaultCompiler": "remote",
-    "solidity.compileUsingLocalVersion": "c:\\NTU_Assignments\\Blockchain dev projects\\Lottery-DApp\\Lottery-DApp\\soljson-v0.8.4+commit.c7e474f2.js"
+    "solidity.compileUsingLocalVersion": "c:\\NTU_Assignments\\Blockchain dev projects\\Lottery-DApp\\Lottery-DApp\\soljson-v0.8.4+commit.c7e474f2.js",
+    "workbench.preferredDarkColorTheme": "Visual Studio Light",
+    "workbench.colorTheme": "Visual Studio Light",
+    "solidity.compileUsingRemoteVersion": "v0.8.4+commit.c7e474f2"
 }

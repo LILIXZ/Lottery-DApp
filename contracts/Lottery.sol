@@ -416,6 +416,13 @@ contract Lottery {
     if (guessCandidates.length > 0) {
       winningGuessSha3 = guessCandidates[0];
       delete guessCandidates[0];
+    } else {
+      uint256 lastRequestId = generator.lastRequestId();
+      (, uint256[] memory randomWords) = generator.getRequestStatus(lastRequestId);
+      winningGuessSha3 = keccak256(abi.encode(randomWords[0] % 10 + 1));
+      for (uint i = 0; i < randomWords.length - 1; i++){
+        guessCandidates.push(keccak256(abi.encode(randomWords[i+1] % 10 + 1)));
+      }
     }
   }
 }

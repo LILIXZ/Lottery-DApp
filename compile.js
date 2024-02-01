@@ -21,6 +21,8 @@ const input = {
   },
 };
 
+console.log(solc.compile(JSON.stringify(input)));
+
 const { abi, evm } = JSON.parse(solc.compile(JSON.stringify(input))).contracts[
   'Lottery.sol'
 ].Lottery;
