@@ -400,7 +400,7 @@ contract Lottery {
         // If unused tokens > 0, update unused tokens to 0
         _user.tokensBought = 0; 
         // Transfer ethers of unused tokens to the users
-        payable(userAddress).transfer(((unusedTokens * 2) / 100) * (10**18));
+        payable(userAddress).transfer((unusedTokens* (10**18)) * 2 / 100);
       }
     }
   }

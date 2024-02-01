@@ -20,7 +20,8 @@ class App extends React.Component {
     buyTokenAmount: 0,
     guessNumber: "",
     winnerAddress: "",
-    winnerGuess: ""
+    winnerGuess: "",
+    loading: false
   };
 
   async componentDidMount() {
@@ -38,10 +39,17 @@ class App extends React.Component {
     // if current user is not participating the game, add user into the participants
     const result = await lottery.methods.users(this.state.player).call();
     if(result[0] == "0x0000000000000000000000000000000000000000"){
-      await lottery.methods.makeUser().send({
-        gas: 140000, 
-        from: this.state.player
-      });
+      this.setState({loading: true});
+
+      try{
+        await lottery.methods.makeUser().send({
+          gas: 140000, 
+          from: this.state.player
+        });
+      }catch(error){
+        console.error(error);
+      }
+      this.setState({loading: false});
     }
 
     // populate account
@@ -62,6 +70,8 @@ class App extends React.Component {
       }
       this.setState({userGuesses: guesses_string.substr(0, guesses_string.length - 1)});
     });
+
+    this.setState({loading: false});
   }
 
   handleBuyToken = (event) => {
@@ -77,23 +87,31 @@ class App extends React.Component {
       alert("Please input amount of tokens.")
       return false;
     }
-    await lottery.methods.addTokens().send({
-      from: this.state.player,
-      value: web3.utils.toWei(this.state.buyTokenAmount * 0.02, 'ether')
-    });
-
-    // populate account
-    await lottery.methods.userTokens(this.state.player).call().then((r) => {
-      this.setState({playerTokenNums: Number(r)});
-    });
-    await web3.eth.getBalance(this.state.player).then((res)=>{
-      this.setState({playerBalance: web3.utils.fromWei(res, 'ether') + ' ether'});
-    })
-    await web3.eth.getBalance(lottery.options.address).then((res)=>{
-      this.setState({contractBalance: web3.utils.fromWei(res, 'ether') + ' ether'});
-    })
-
-    this.setState({ buyTokenAmount: 0 }) 
+    try{
+      this.setState({loading: true});
+      await lottery.methods.addTokens().send({
+        from: this.state.player,
+        value: web3.utils.toWei(this.state.buyTokenAmount * 0.02, 'ether')
+      });
+  
+      // populate account
+      await lottery.methods.userTokens(this.state.player).call().then((r) => {
+        this.setState({playerTokenNums: Number(r)});
+      });
+      await web3.eth.getBalance(this.state.player).then((res)=>{
+        this.setState({playerBalance: web3.utils.fromWei(res, 'ether') + ' ether'});
+      })
+      await web3.eth.getBalance(lottery.options.address).then((res)=>{
+        this.setState({contractBalance: web3.utils.fromWei(res, 'ether') + ' ether'});
+      })
+  
+      this.setState({ buyTokenAmount: 0 }) 
+      this.setState({loading: false});
+    } catch(error){
+      console.error('Error buying token:', error);
+      this.setState({loading: false});
+    }
+    
   }
 
   async makeGuess(){
@@ -101,30 +119,40 @@ class App extends React.Component {
       alert("Please input a guess number between 1 to 10.")
       return false
     }
-    await lottery.methods.makeGuess(this.state.guessNumber).send({
-      from: this.state.player,
-      gas: 140000
-    });
-    this.setState({ guessNumber: "" }) 
-
-    // populate account
-    await lottery.methods.userTokens(this.state.player).call().then((r) => {
-      this.setState({playerTokenNums: Number(r)});
-    });
-    await web3.eth.getBalance(this.state.player).then((res)=>{
-      this.setState({playerBalance: web3.utils.fromWei(res, 'ether') + ' ether'});
-    })
-    var guesses_string = "";
-    await lottery.methods.userGuesses(this.state.player).call().then((guesses) => {
-      for(var i = 0; i < guesses.length; i++) {
-        guesses_string += (guesses[i] + ",");
-      }
-      this.setState({userGuesses: guesses_string.substr(0, guesses_string.length - 1)});
-    });
+    
+    try{
+      this.setState({loading: true});
+      await lottery.methods.makeGuess(this.state.guessNumber).send({
+        from: this.state.player,
+        gas: 140000
+      });
+      this.setState({ guessNumber: "" }) 
+  
+      // populate account
+      await lottery.methods.userTokens(this.state.player).call().then((r) => {
+        this.setState({playerTokenNums: Number(r)});
+      });
+      await web3.eth.getBalance(this.state.player).then((res)=>{
+        this.setState({playerBalance: web3.utils.fromWei(res, 'ether') + ' ether'});
+      })
+      var guesses_string = "";
+      await lottery.methods.userGuesses(this.state.player).call().then((guesses) => {
+        for(var i = 0; i < guesses.length; i++) {
+          guesses_string += (guesses[i] + ",");
+        }
+        this.setState({userGuesses: guesses_string.substr(0, guesses_string.length - 1)});
+      });
+    }catch(error){
+      console.error(error)
+    }
+    
+    
+    this.setState({loading: false});
   }
 
   async closeGame(){
     try {
+      this.setState({loading: true});
       await lottery.methods.reimburseTokens().send({
         from: this.state.owner,
         gas: 140000
@@ -141,13 +169,16 @@ class App extends React.Component {
           this.setState({ winnerAddress: res });
         });
       });
+      this.setState({loading: false});
     } catch (error) {
+      this.setState({loading: false});
       console.error('Error closing game:', error);
     }
   };
 
   async transferFunds(){
     try {
+      this.setState({loading: true});
       // 调用智能合约的 getPrice 函数
       await lottery.methods.getPrice().send({
         from: this.state.owner,
@@ -174,6 +205,7 @@ class App extends React.Component {
       });
 
       this.setState({showCloseGameInfo: false});
+      this.setState({loading: false});
     } catch (error) {
       console.error('Error transferring funds:', error);
     }
@@ -182,6 +214,11 @@ class App extends React.Component {
   render() {
     return (
       <>
+        {this.state.loading && (
+          <div className="loading-overlay">
+            <div className="loading-spinner"></div>
+          </div>
+        )}
         <header className="artistic-text">
           Lottery
         </header>
