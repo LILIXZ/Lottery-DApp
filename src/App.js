@@ -17,6 +17,7 @@ class App extends React.Component {
     playerTokenNums: 0,
     showCloseGameInfo: false,
     userGuesses: "",
+    buyTokenAmount: 0,
   };
 
   async componentDidMount() {
@@ -61,6 +62,34 @@ class App extends React.Component {
 
   }
 
+  handleBuyToken = (event) => {
+    this.setState({ buyTokenAmount: event.target.value }) 
+  }
+
+  async buyToken(){
+    if (this.state.buyTokenAmount < 1) {
+      alert("Please input amount of tokens.")
+      return false;
+    }
+    await lottery.methods.addTokens().send({
+      from: this.state.player,
+      value: web3.utils.toWei(this.state.buyTokenAmount * 0.02, 'ether')
+    });
+
+    // populate account
+    await lottery.methods.userTokens(this.state.player).call().then((r) => {
+      this.setState({playerTokenNums: Number(r)});
+    });
+    await web3.eth.getBalance(this.state.player).then((res)=>{
+      this.setState({playerBalance: web3.utils.fromWei(res, 'ether') + ' ether'});
+    })
+    await web3.eth.getBalance(lottery.options.address).then((res)=>{
+      this.setState({contractBalance: web3.utils.fromWei(res, 'ether') + ' ether'});
+    })
+
+    this.setState({ buyTokenAmount: 0 }) 
+  }
+
   render() {
     return (
       <>
@@ -93,8 +122,8 @@ class App extends React.Component {
                 <li><i>Balance: <span>{this.state.contractBalance}</span></i></li>
                 <li>
                   <i>Buy Tokens:&nbsp;
-                    <input id="token-amount" type="number" />
-                    <button className="btn btn-primary" id="token-amount-btn">Buy</button>
+                    <input id="token-amount" type="number" value={this.state.buyTokenAmount} onChange={this.handleBuyToken} />
+                    <button className="btn btn-primary" id="token-amount-btn" onClick={async() => {await this.buyToken();}}>Buy</button>
                   </i>
                 </li>
                 <li>
@@ -120,7 +149,7 @@ class App extends React.Component {
                   <li> <i>Winner:<span id="winner-address"> </span></i> </li>
                   <li><i>Guess(SHA3):<span id="winning-guess"></span></i></li>
                   <button onclick="return closeGame()"> Get winning INFO </button>
-                  <button id="transfer-funds-btn" onclick="return transferFunds()"> <a href="index.html">Transfer Funds </a></button>
+                  <button id="transfer-funds-btn" onClick="return transferFunds()"> <a href="index.html">Transfer Funds </a></button>
                 </ul>
               </div>
               </>

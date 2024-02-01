@@ -78,6 +78,7 @@ body {
 }
 
 li {
+  font-size: 12px;
   margin: 20px 20px;
   list-style: none;
   height: 40px;
